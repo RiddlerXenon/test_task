@@ -34,32 +34,27 @@ func New() (*Cache, error) {
 	return c, nil
 }
 
-func (c *Cache) Add(key, value string, ttl int64) error {
+func (c *Cache) Add(key, value string, ttl time.Duration) error {
 	c.Mutex.Lock()
 	defer c.Mutex.Unlock()
 
 	if _, exists := c.Items[key]; exists {
 		return fmt.Errorf("key already exists")
 	}
-	c.Items[key] = {
+	c.Items[key] = Item{
 		Value: value,
-		TTL: ttl,
+		TTL:   time.Now().Add(ttl).UnixNano(),
 	}
 	return nil
 }
 
-func (c *Cache) Set(key, val string, ttl int64) error {
-	if ttl == 0 {
-		now := time.Now()
-		ttl = now.Add(time.Second * time.Duration(300)).UnixNano()
-	}
-
+func (c *Cache) Set(key, val string, ttl time.Duration) error {
 	c.Mutex.Lock()
 	defer c.Mutex.Unlock()
 
 	if item, exists := c.Items[key]; exists {
 		item.Value = val
-		item.TTL = ttl
+		item.TTL = time.Now().Add(ttl).UnixNano()
 		return nil
 	}
 	return fmt.Errorf("key %s not found", key)
@@ -85,7 +80,7 @@ func (c *Cache) Del(key string) error {
 	c.Mutex.Lock()
 	defer c.Mutex.Unlock()
 
-	if item, exists := c.Items[key]; exists {
+	if _, exists := c.Items[key]; exists {
 		delete(c.Items, key)
 		return nil
 	}

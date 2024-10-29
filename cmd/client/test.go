@@ -1,12 +1,14 @@
-package client
+package main
 
 import (
 	"fmt"
 	"time"
+
+	"github.com/RiddlerXenon/test_task/internal/client"
 )
 
 func main() {
-	client := NewHTTPClient("http://localhost:8080")
+	client := client.NewHTTPClient("http://localhost:8080/api")
 
 	err := client.Add("key0", "value1", 10*time.Second)
 	if err != nil {

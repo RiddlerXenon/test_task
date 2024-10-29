@@ -1,8 +1,10 @@
 package handler
 
+import "time"
+
 type Request struct {
-	Value string `json:"value"`
-	TTL   int64  `json:"ttl"`
+	Value string        `json:"value"`
+	TTL   time.Duration `json:"ttl"`
 }
 
 type Response struct {

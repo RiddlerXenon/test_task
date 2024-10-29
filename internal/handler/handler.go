@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -15,7 +16,7 @@ func parseKey(u *url.URL) string {
 	return key
 }
 
-func AddSetHandler(f func(key, value string, ttl int64) error) http.HandlerFunc {
+func AddSetHandler(f func(key, value string, ttl time.Duration) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
@@ -36,9 +37,9 @@ func AddSetHandler(f func(key, value string, ttl int64) error) http.HandlerFunc 
 				return
 			}
 
-			err := f(key, request.Value, request.TTL)
+			err = f(key, request.Value, request.TTL)
 			if err != nil {
-				http.Error(w, err, http.StatusBadRequest)
+				http.Error(w, "Bad request", http.StatusBadRequest)
 				zap.S().Error(err)
 			}
 		default:
@@ -51,7 +52,7 @@ func AddSetHandler(f func(key, value string, ttl int64) error) http.HandlerFunc 
 func DelHandler(f func(key string) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
-		case http.MethodPost:
+		case http.MethodDelete:
 			key := parseKey(r.URL)
 			if key == "" {
 				http.Error(w, "Key is empty", http.StatusBadRequest)
@@ -61,7 +62,7 @@ func DelHandler(f func(key string) error) http.HandlerFunc {
 
 			err := f(key)
 			if err != nil {
-				http.Error(w, err, http.StatusBadRequest)
+				http.Error(w, "Bad request", http.StatusBadRequest)
 				zap.S().Error(err)
 			}
 		default:
